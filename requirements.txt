@@ -1,2 +1,4 @@
 mysql-connector-python
-flask-
+flask-restful
+psycopg2-binay
+passlib
