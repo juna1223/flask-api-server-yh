@@ -8,7 +8,9 @@ from mysql.connector.errors import Error
 
 from email_validator import validate_email, EmailNotValidError
 
-from utils import hash_password
+from utils import hash_password, check_password
+
+from flask_jwt_extended import create_access_token
 
 class UserLoginResource(Resource) :
     def post(self) :
@@ -67,10 +69,14 @@ class UserLoginResource(Resource) :
         # 3. 클라이언트로부터 받은 비번과, DB에 저장된 비번이
         #    동일한지 체크한다.        
         # data['password']
-        # record_list[0]['password']
+        # record_list[0]['password']        
+        if check_password(data['password'], record_list[0]['password']) == False :
+            # 4. 다르면, 비번 틀렸다고 클라이언트에 응답한다.
+            return {'error' : '비번이 다릅니다.'}, HTTPStatus.BAD_REQUEST
 
-        # 4. 다르면, 비번 틀렸다고 클라이언트에 응답한다.
+        # 5. JTW 인증 토큰을 만들어준다.
+        #    유저 아이디를 가지고 인증토큰을 만든다.
+        user_id = record_list[0]['id']
+        access_token = create_access_token(user_id)
 
-        return {'result' : record_list}
-
-
+        return {'result' : '로그인이 되었습니다.', 'access_token' : access_token}

@@ -10,6 +10,8 @@ from email_validator import validate_email, EmailNotValidError
 
 from utils import hash_password
 
+from flask_jwt_extended import create_access_token
+
 class UserRegisterResource(Resource) :
     def post(self) :       
         
@@ -64,6 +66,11 @@ class UserRegisterResource(Resource) :
             # 5. 커넥션을 커밋한다.=> 디비에 영구적으로 반영하라는 뜻.
             connection.commit()
 
+            # DB에 저장된 유저의 아이디를 가져온다.
+            user_id = cursor.lastrowid
+
+            print(user_id)
+
         except Error as e:
             print('Error ', e)
             # 6. username이나 email이 이미 DB에 있으면,
@@ -75,7 +82,11 @@ class UserRegisterResource(Resource) :
                 connection.close()
                 print('MySQL connection is closed')
        
+        # 7. JWT 토큰을 발행한다.
+        ### DB 에 저장된 유저 아이디값으로 토큰을 발행한다!
+        
+        access_token = create_access_token(user_id)
 
-        # 7. 모든것이 정상이면, 회원가입 잘 되었다고 응답한다.
-        return {'result' : '회원가입이 잘 되었습니다.'}
-
+        # 8. 모든것이 정상이면, 회원가입 잘 되었다고 응답한다.
+        return {'result' : '회원가입이 잘 되었습니다.', 
+                'access_token' : access_token}
